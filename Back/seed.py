@@ -24,16 +24,22 @@ with app.app_context():
     # "Фудулей Мария Сергеевна" (это зашито в App.vue). Поэтому он обязательно
     # должен быть, иначе "Мои бронирования" не заработают.
     fudulei = Teacher(lname="Фудулей", fname="Мария", mname="Сергеевна", lesson="C#")
-    smirnova = Teacher(lname="Смирнова", fname="А.", mname="В.", lesson="Математика")
-    kozlov = Teacher(lname="Козлов", fname="И.", mname="П.", lesson="Информатика")
-    petrova = Teacher(lname="Петрова", fname="М.", mname="С.", lesson="Физика")
-    db.session.add_all([fudulei, smirnova, kozlov, petrova])
+    kur1 = Teacher(lname="Высоцкий", fname="Данил", lesson="Куратор")
+    kur2 = Teacher(lname="Родионов", fname="Федя", lesson="Куратор")
+    kur3 = Teacher(lname="Лисина", fname="Кристина", lesson="Куратор")
+    kur4 = Teacher(lname="Пудова", fname="Таня", lesson="Куратор")
+    kur5 = Teacher(lname="Лютвайтес", fname="Артем", lesson="Куратор")
+    kur6 = Teacher(lname="Снитко", fname="Маша", lesson="Куратор")
+    kur7 = Teacher(lname="Тинчурина", fname="Динара", lesson="Куратор")
+    kur8 = Teacher(lname="Муругова", fname="Лиза", lesson="Куратор")
+    kur9 = Teacher(lname="Жарова", fname="Настя", lesson="Куратор")
+    db.session.add_all([fudulei, kur1, kur2, kur3, kur4, kur5, kur6, kur7, kur8, kur9])
 
-    rooms = {name: Classroom(name=name) for name in ("А-101", "А-205", "Б-204", "В-312")}
+    rooms = {name: Classroom(name=name) for name in ("1", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7", "2.8", "2.9")}
     db.session.add_all(rooms.values())
 
     # 24 ноутбука с номерами 1..24, изначально все свободны, состояние "Норма".
-    laptops = [Laptop(number=n, status=STATUS_FREE, condition="Норма") for n in range(1, 25)]
+    laptops = [Laptop(number=n, status=STATUS_FREE, condition="Норма") for n in range(1, 35)]
     db.session.add_all(laptops)
 
     db.session.flush()  # проставляем id всем объектам перед созданием выдач
@@ -57,24 +63,13 @@ with app.app_context():
             if condition:
                 laptop.condition = condition
 
-    # laptops[n] имеет number = n+1, т.е. laptops[6] -> NB-007.
-    make_issue(smirnova, rooms["А-101"], "Математический анализ", [
-        (laptops[6], "Орлов П. К.", "ИС-21", "Норма", False, True),
-        (laptops[11], "Белова Н. А.", "ИС-21", "Царапина на крышке", False, False),
-    ])
-    make_issue(kozlov, rooms["Б-204"], "Основы программирования", [
-        (laptops[20], "Гусев Р. Д.", "ПО-22", "Норма", True, True),
-    ])
-    make_issue(petrova, rooms["В-312"], "Физика", [
-        (laptops[14], "Зайцева Л. М.", "ЭЛ-20", "Не работает тачпад", False, True),
-    ])
-    make_issue(fudulei, rooms["А-205"], "Базы данных", [
-        (laptops[2], "Соколов А. А.", "ПО-22", "Норма", True, True),
-        (laptops[8], "Морозова Е. В.", "ПО-22", "Норма", True, False),
+    make_issue(fudulei, rooms["1.6"], "C#", [
+        (laptops[2], "Юдин Максим", "ИСП9-kh24", "Норма", True, True),
+        (laptops[8], "Вернигоров Георгий", "ИСП9-kh21", "Норма", True, False),
     ])
 
     db.session.commit()
 
     busy = Laptop.query.filter_by(status=STATUS_ISSUED).count()
-    print(f"Готово. Преподавателей: 4, аудиторий: {len(rooms)}, "
+    print(f"Готово. Преподавателей: 10, аудиторий: {len(rooms)}, "
           f"ноутбуков: {len(laptops)} (занято {busy}, свободно {len(laptops) - busy}).")
