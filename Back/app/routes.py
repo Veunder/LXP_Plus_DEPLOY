@@ -65,9 +65,9 @@ def create_issue():
         return jsonify({"error": "В одной выдаче должно быть от 1 до 10 ноутбуков."}), 400
 
     if db.session.get(Teacher, teacher_id) is None:
-        return jsonify({"error": "Преподаватель не найден."}), 404
+        return jsonify({"error": "Преподаватель не найден."}), 400
     if db.session.get(Classroom, classroom_id) is None:
-        return jsonify({"error": "Аудитория не найдена."}), 404
+        return jsonify({"error": "Аудитория не найдена."}), 400
 
     # --- один ноутбук не может встречаться в запросе дважды ---
     laptop_ids = [it.get("laptop_id") for it in items]
@@ -79,6 +79,16 @@ def create_issue():
     if len(request_keys) != len(set(request_keys)):
         return jsonify({"error": "Ученик из одной группы не может получить два ноутбука."}), 400
 
+    # --- ФИО ученика без цифр, обязательные поля заполнены ---
+    for it in items:
+        name = (it.get("student_full_name") or "").strip()
+        if not name:
+            return jsonify({"error": "Укажите ФИО ученика."}), 400
+        if any(ch.isdigit() for ch in name):
+            return jsonify({"error": "ФИО ученика не должно содержать цифры."}), 400
+        if not (it.get("student_group") or "").strip():
+            return jsonify({"error": "Укажите группу ученика."}), 400
+
     # --- проверяем сами ноутбуки: существуют и свободны ---
     laptops = {}
     for lid in laptop_ids:
@@ -86,7 +96,7 @@ def create_issue():
         if laptop is None:
             return jsonify({"error": f"Ноутбук id={lid} не найден."}), 400
         if laptop.status != STATUS_FREE:
-            return jsonify({"error": f"Ноутбук NB-{laptop.number:03d} уже занят."}), 409
+            return jsonify({"error": f"Ноутбук №{laptop.number:03d} уже занят."}), 409
         laptops[lid] = laptop
 
     # --- правило: ученик уже держит активный ноутбук? ---
