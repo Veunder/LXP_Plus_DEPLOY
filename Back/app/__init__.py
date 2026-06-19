@@ -1,5 +1,6 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
+from werkzeug.exceptions import HTTPException
 
 import os
 
@@ -32,6 +33,15 @@ def create_app():
     # Импорт маршрутов внутри функции — чтобы избежать циклических импортов.
     from app.routes import api
     app.register_blueprint(api)
+
+    # Ошибки отдаём в JSON, чтобы фронт показывал понятный текст, а не заглушку.
+    @app.errorhandler(HTTPException)
+    def _handle_http_exception(e):
+        return jsonify({"error": e.description}), e.code
+
+    @app.errorhandler(Exception)
+    def _handle_exception(e):
+        return jsonify({"error": f"Внутренняя ошибка сервера: {e}"}), 500
 
     # Создаём таблицы, если их ещё нет.
     with app.app_context():
