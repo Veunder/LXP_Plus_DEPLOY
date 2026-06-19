@@ -19,6 +19,7 @@ body { margin: 0; background: var(--bg); color: var(--text); }
 button, input, select { font: inherit; }
 
 .topbar {
+  position: relative;
   height: 52px;
   display: flex;
   align-items: center;
@@ -55,6 +56,21 @@ nav a.active { color: var(--purple); border-bottom: 2px solid var(--purple); fon
   width: 18px;
   height: 18px;
 }
+/* кнопка-гамбургер: видна только на мобильном (см. медиазапрос ниже) */
+.nav-toggle {
+  display: none;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.nav-toggle svg { width: 20px; height: 20px; }
 .topbar-user {
   color: var(--text);
   font-size: 13px;
@@ -214,16 +230,49 @@ input, select { width: 100%; border: 1px solid var(--border); border-radius: 6px
 @media (max-width: 720px) {
   .stats, .grid, .item-row { grid-template-columns: 1fr; }
   .wide { grid-column: span 1; }
-  nav a { padding: 0 8px; }
   .toast { right: 12px; left: 12px; bottom: 12px; max-width: none; }
   .topbar {
-    gap: 12px;
+    gap: 10px;
     padding: 0 12px;
   }
   .topbar-right {
     gap: 6px;
   }
   .topbar-user {
+    display: none;
+  }
+
+  /* шапка не помещается в одну строку — переключаем на гамбургер-меню */
+  .nav-toggle { display: inline-flex; }
+
+  nav {
+    display: none;             /* по умолчанию свёрнуто */
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, .08);
+    z-index: 50;
+  }
+  nav.open { display: flex; }   /* раскрыто после клика по гамбургеру */
+  nav a {
+    padding: 13px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  nav a.active {
+    background: var(--purple-light);
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+/* совсем узкий экран: убираем второстепенные иконки, оставляя только
+   самое нужное (уведомления + аватар), чтобы шапка точно помещалась */
+@media (max-width: 420px) {
+  .topbar-right .topbar-icon:nth-child(1),
+  .topbar-right .topbar-icon:nth-child(3) {
     display: none;
   }
 }
@@ -244,3 +293,85 @@ table { min-width: 1000px; }
 
 /* в форме выдачи поле "Состояние" вместо числа клавиш (то же место в сетке) */
 .item-row { grid-template-columns: 130px 1.4fr 100px 1fr 80px 90px auto; }
+
+/* ===== Адаптивность под разные устройства (идёт последним, перекрывает базовое) ===== */
+
+/* заголовок и кнопки переносятся, если не помещаются в строку */
+.title-row { flex-wrap: wrap; gap: 12px; }
+
+/* планшет: счётчики в две колонки вместо четырёх */
+@media (max-width: 900px) {
+  .stats { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* узкий экран: модальная форма выдачи — в один столбец
+   (перекрывает 7-колоночную раскладку .item-row выше) */
+@media (max-width: 720px) {
+  .grid { grid-template-columns: 1fr; }
+  .wide { grid-column: span 1; }
+  .item-row { grid-template-columns: 1fr; gap: 10px; }
+}
+
+/* телефон: таблица превращается в карточки */
+@media (max-width: 640px) {
+  .content { padding: 16px; }
+  h1 { font-size: 20px; }
+
+  /* кнопки шапки на всю ширину */
+  .title-actions { width: 100%; }
+  .title-actions .ghost,
+  .title-actions .primary { flex: 1; }
+
+  .stats { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat-card { padding: 12px; }
+  .stat-card strong { font-size: 22px; }
+
+  /* контейнер таблицы перестаёт быть прокручиваемой карточкой */
+  .table-card { overflow: visible; border: none; background: transparent; }
+  table { min-width: 0; width: 100%; }
+  thead { display: none; }                 /* шапку прячем — подписи уйдут в строки */
+  tbody, tr, td { display: block; width: 100%; }
+
+  /* каждая строка — отдельная карточка */
+  tr {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    padding: 4px 14px;
+  }
+
+  /* ячейка: подпись слева, значение справа */
+  td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    height: auto;
+    padding: 10px 0;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    text-align: right;
+  }
+  tr td:last-child { border-bottom: none; }
+
+  /* подпись столбца берём из data-label */
+  td::before {
+    content: attr(data-label);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    text-align: left;
+    flex-shrink: 0;
+  }
+
+  /* номер ноутбука — как заголовок карточки */
+  td.mono { font-size: 16px; font-weight: 700; color: var(--text); }
+
+  /* двустрочные ячейки (преподаватель/студент) выравниваем вправо */
+  .cell-stack { text-align: right; }
+
+  /* строка "ничего не найдено" — обычным блоком по центру, без подписи */
+  td.empty-state { display: block; text-align: center; padding: 20px 0; border-bottom: none; }
+  td.empty-state::before { content: none; }
+}
