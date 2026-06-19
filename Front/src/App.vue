@@ -8,6 +8,7 @@ const classrooms = ref([]);
 const loading = ref(false);
 const error = ref("");
 const showForm = ref(false);
+const navOpen = ref(false);
 const activeFilter = ref("all");
 const CURRENT_TEACHER_NAME = "Фудулей Мария Сергеевна";
 const toast = reactive({
@@ -220,8 +221,21 @@ onMounted(loadData);
 <template>
   <main class="page">
     <header class="topbar">
+      <button
+        class="nav-toggle"
+        type="button"
+        :aria-expanded="navOpen"
+        aria-label="Открыть меню"
+        @click="navOpen = !navOpen"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <line x1="4" y1="7" x2="20" y2="7"></line>
+          <line x1="4" y1="12" x2="20" y2="12"></line>
+          <line x1="4" y1="17" x2="20" y2="17"></line>
+        </svg>
+      </button>
       <div class="logo" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
-      <nav>
+      <nav :class="{ open: navOpen }" @click="navOpen = false">
         <a>Главная</a>
         <a>Расписание</a>
         <a>Обучение</a>
@@ -368,7 +382,7 @@ onMounted(loadData);
             </select>
           </label>
           <label class="wide">Название пары
-            <input v-model="form.subject_name" required placeholder="Название дисциплины, которую вы сейчас ведёте" />
+            <input v-model="form.subject_name" required placeholder="Базы данных" />
           </label>
         </div>
 
