@@ -96,6 +96,11 @@ function studentKey(fullName, group) {
   return `${normalizeText(fullName)}::${normalizeText(group)}`;
 }
 
+function onStudentNameInput(item, event) {
+  // ФИО без цифр: убираем их сразу при вводе.
+  item.student_full_name = event.target.value.replace(/[0-9]/g, "");
+}
+
 async function loadData() {
   loading.value = true;
   error.value = "";
@@ -151,6 +156,12 @@ async function releaseLaptop(laptop) {
 async function submitIssue() {
   error.value = "";
   try {
+    const nameWithDigits = form.items.find((item) => /\d/.test(item.student_full_name));
+    if (nameWithDigits) {
+      showToast("ФИО ученика не должно содержать цифры.");
+      return;
+    }
+
     const laptopIds = form.items.map((item) => Number(item.laptop_id)).filter(Boolean);
     if (laptopIds.length !== new Set(laptopIds).size) {
       showToast("Один и тот же ноутбук нельзя выбрать для двух учеников.");
@@ -283,39 +294,39 @@ onMounted(loadData);
           </thead>
           <tbody>
             <tr v-for="laptop in filteredLaptops" :key="laptop.id">
-              <td class="mono">{{ String(laptop.number).padStart(3, "0") }}</td>
-              <td>
+              <td class="mono" data-label="№">{{ String(laptop.number).padStart(3, "0") }}</td>
+              <td data-label="Статус">
                 <span class="badge" :class="laptop.status">
                   {{ laptop.status === "free" ? "Свободен" : "Занят" }}
                 </span>
               </td>
-              <td>
-                <template v-if="laptop.teacher">
+              <td data-label="Преподаватель">
+                <div v-if="laptop.teacher" class="cell-stack">
                   <div class="cell-main">{{ laptop.teacher }}</div>
                   <div class="cell-sub">{{ laptop.subject_name || "—" }}</div>
-                </template>
+                </div>
                 <span v-else>-</span>
               </td>
-              <td>{{ laptop.classroom || "-" }}</td>
-              <td>
-                <template v-if="laptop.student_full_name">
+              <td data-label="Аудитория">{{ laptop.classroom || "-" }}</td>
+              <td data-label="Студент">
+                <div v-if="laptop.student_full_name" class="cell-stack">
                   <div class="cell-main">{{ laptop.student_full_name }}</div>
                   <div class="cell-sub">{{ laptop.student_group || "—" }}</div>
-                </template>
+                </div>
                 <span v-else>-</span>
               </td>
-              <td class="centered">
+              <td class="centered" data-label="Мышь">
                 <span v-if="laptop.has_mouse === true" class="accessory yes">✓</span>
                 <span v-else-if="laptop.has_mouse === false" class="accessory no">✕</span>
                 <span v-else class="accessory empty">-</span>
               </td>
-              <td class="centered">
+              <td class="centered" data-label="Зарядка">
                 <span v-if="laptop.has_charger === true" class="accessory yes">✓</span>
                 <span v-else-if="laptop.has_charger === false" class="accessory no">✕</span>
                 <span v-else class="accessory empty">-</span>
               </td>
-              <td>{{ laptop.condition || "-" }}</td>
-              <td>
+              <td data-label="Состояние">{{ laptop.condition || "-" }}</td>
+              <td data-label="Бронирование">
                 <span v-if="laptop.status === 'free'" class="reservation-empty">-</span>
                 <div v-else class="booking-cell">
                   <span v-if="isMyBooking(laptop)" class="reservation-note">ваше бронирование</span>
@@ -357,7 +368,7 @@ onMounted(loadData);
             </select>
           </label>
           <label class="wide">Название пары
-            <input v-model="form.subject_name" required placeholder="Базы данных" />
+            <input v-model="form.subject_name" required placeholder="Название дисциплины, которую вы сейчас ведёте" />
           </label>
         </div>
 
@@ -369,7 +380,7 @@ onMounted(loadData);
                 {{ String(laptop.number).padStart(3, "0") }}
               </option>
             </select>
-            <input v-model="item.student_full_name" required placeholder="ФИО ученика" />
+            <input :value="item.student_full_name" @input="onStudentNameInput(item, $event)" required placeholder="ФИО ученика" />
             <input v-model="item.student_group" required placeholder="Группа" />
             <input v-model="item.condition" placeholder="Состояние" />
             <label class="check"><input v-model="item.has_mouse" type="checkbox" /> Мышь</label>
