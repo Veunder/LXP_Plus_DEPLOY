@@ -142,7 +142,7 @@ async function releaseLaptop(laptop) {
   try {
     await api.releaseLaptop(laptop.id);
     await loadData();
-    showToast(`Ноутбук NB-${String(laptop.number).padStart(3, "0")} освобожден.`, "success");
+    showToast(`Ноутбук ${String(laptop.number).padStart(3, "0")} освобожден.`, "success");
   } catch (err) {
     showToast(err.message || "Не удалось освободить ноутбук.");
   }
@@ -283,7 +283,7 @@ onMounted(loadData);
           </thead>
           <tbody>
             <tr v-for="laptop in filteredLaptops" :key="laptop.id">
-              <td class="mono">NB-{{ String(laptop.number).padStart(3, "0") }}</td>
+              <td class="mono">{{ String(laptop.number).padStart(3, "0") }}</td>
               <td>
                 <span class="badge" :class="laptop.status">
                   {{ laptop.status === "free" ? "Свободен" : "Занят" }}
@@ -366,7 +366,7 @@ onMounted(loadData);
             <select v-model="item.laptop_id" required>
               <option value="">Ноутбук...</option>
               <option v-for="laptop in availableLaptopsFor(index)" :key="laptop.id" :value="laptop.id">
-                NB-{{ String(laptop.number).padStart(3, "0") }}
+                {{ String(laptop.number).padStart(3, "0") }}
               </option>
             </select>
             <input v-model="item.student_full_name" required placeholder="ФИО ученика" />
