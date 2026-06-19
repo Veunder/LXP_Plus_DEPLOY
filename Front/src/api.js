@@ -1,5 +1,16 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
+function explainError(status, serverMessage) {
+  // Ожидаемые ошибки (проверка данных, не найдено) — у них есть понятное
+  // объяснение с сервера, показываем его как есть.
+  if (status === 400 || status === 404 || status === 409) {
+    return serverMessage || "Проверьте правильность введённых данных.";
+  }
+  // Всё остальное (500 и прочие нестандартные ситуации) — не показываем
+  // технические детали, говорим про неизвестную ошибку.
+  return "Произошла неизвестная ошибка. Попробуйте позже.";
+}
+
 async function request(path, options = {}) {
   let response;
   try {
@@ -20,11 +31,7 @@ async function request(path, options = {}) {
   }
 
   if (!response.ok) {
-    // Показываем текст ошибки от сервера; если его нет — код статуса.
-    const detail = data && data.error
-      ? data.error
-      : `Сервер вернул ошибку ${response.status} (${response.statusText || "без описания"}).`;
-    throw new Error(detail);
+    throw new Error(explainError(response.status, data && data.error));
   }
   return data;
 }
