@@ -53,7 +53,7 @@ class Laptop(db.Model):
     __tablename__ = "laptops"
 
     id = db.Column(db.Integer, primary_key=True)
-    # Номер выводится на фронте как NB-001 (через padStart). Храним числом.
+    # Номер выводится на фронте как 001 (через padStart). Храним числом.
     number = db.Column(db.Integer, unique=True, nullable=False)
     status = db.Column(db.String(20), nullable=False, default=STATUS_FREE)
     # Состояние устройства (как изначально в ERD). Показывается в таблице
