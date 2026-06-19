@@ -41,7 +41,10 @@ def create_app():
 
     @app.errorhandler(Exception)
     def _handle_exception(e):
-        return jsonify({"error": f"Внутренняя ошибка сервера: {e}"}), 500
+        # Полную ошибку пишем в логи сервера (видно в Render → Logs),
+        # а клиенту отдаём общий текст без технических подробностей.
+        app.logger.exception("Необработанная ошибка")
+        return jsonify({"error": "Внутренняя ошибка сервера."}), 500
 
     # Создаём таблицы, если их ещё нет.
     with app.app_context():
